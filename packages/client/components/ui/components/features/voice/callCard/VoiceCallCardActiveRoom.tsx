@@ -22,6 +22,8 @@ export function VoiceCallCardActiveRoom() {
       <Participants />
       <VoiceCallControls>
         <VoiceCallControlHolder right>
+          <VoiceCallCollapseButton />
+          <VoiceCallExpandButton />
           <VoiceCallFullscreen />
         </VoiceCallControlHolder>
         <VoiceCallCardActions size="sm" />
@@ -30,6 +32,56 @@ export function VoiceCallCardActiveRoom() {
         </VoiceCallControlHolder>
       </VoiceCallControls>
     </View>
+  );
+}
+
+function VoiceCallCollapseButton() {
+  const voice = useVoice();
+  const { t } = useLingui();
+
+  return (
+    <DesktopOnly>
+      <IconButton
+        size="sm"
+        variant="standard"
+        onPress={() => voice.toggleCollapsed()}
+        use:floating={{
+          tooltip: {
+            placement: "top",
+            content: t`Collapse call window`,
+          },
+        }}
+      >
+        <Symbol>unfold_less</Symbol>
+      </IconButton>
+    </DesktopOnly>
+  );
+}
+
+function VoiceCallExpandButton() {
+  const voice = useVoice();
+  const { t } = useLingui();
+
+  return (
+    <DesktopOnly>
+      <IconButton
+        size="sm"
+        variant="standard"
+        onPress={() => voice.toggleExpanded()}
+        use:floating={{
+          tooltip: {
+            placement: "top",
+            content: voice.expanded()
+              ? t`Restore call window`
+              : t`Maximize call window`,
+          },
+        }}
+      >
+        <Show when={voice.expanded()} fallback={<Symbol>open_in_full</Symbol>}>
+          <Symbol>close_fullscreen</Symbol>
+        </Show>
+      </IconButton>
+    </DesktopOnly>
   );
 }
 
@@ -157,11 +209,19 @@ const View = styled("div", {
     minHeight: 0,
     height: "100%",
     width: "100%",
-
     display: "flex",
     flexDirection: "column",
     gap: "var(--gap-md)",
     padding: "var(--gap-md)",
+  },
+});
+
+const DesktopOnly = styled("div", {
+  base: {
+    display: "flex",
+    _tablet: {
+      display: "none",
+    },
   },
 });
 
