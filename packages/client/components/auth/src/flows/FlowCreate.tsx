@@ -1,7 +1,8 @@
-import { Trans } from "@lingui/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import { Show } from "solid-js";
 
 import { useApi, useClientLifecycle } from "@revolt/client";
+import { isEmailDomainAllowed } from "@revolt/common";
 import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import { useNavigate, useParams } from "@revolt/routing";
@@ -17,6 +18,7 @@ import { Fields, Form } from "./Form";
  * Flow for creating a new account
  */
 export default function FlowCreate() {
+  const { t } = useLingui();
   const api = useApi();
   const navigate = useNavigate();
   const { code } = useParams();
@@ -33,6 +35,10 @@ export default function FlowCreate() {
     const password = data.get("new-password") as string;
     const captcha = data.get("captcha") as string;
     const invite = data.get("invite") as string;
+
+    if (!isEmailDomainAllowed(email)) {
+      throw new Error(t`Email domain is not allowed.`);
+    }
 
     await api.post("/auth/account/create", {
       email,

@@ -48,6 +48,52 @@ const DEFAULT_API_URL =
 if (!isStoatOfficialAPI(DEFAULT_API_URL) && DEFAULT_HOST === STOAT_HOST)
   console.error("VITE_HOST required when VITE_API_URL is set!");
 
+const RAW_ALLOWED_DOMAINS =
+  getEnv("VITE_DOMINIOS_PERMITIDOS") ||
+  getEnv("dominios_permitidos") ||
+  getEnv("DOMINIOS_PERMITIDOS") ||
+  getEnv("VITE_ALLOWED_DOMAINS") ||
+  "";
+
+/**
+ * Returns list of allowed email domains (e.g. ['dbseller.com.br', 'gmail.com', 'hotmail.com.br'])
+ */
+export const getAllowedEmailDomains = (): string[] => {
+  const raw =
+    (typeof window !== "undefined" &&
+      (window as unknown as { __DOMINIOS_PERMITIDOS__?: string })
+        .__DOMINIOS_PERMITIDOS__) ||
+    RAW_ALLOWED_DOMAINS ||
+    "";
+
+  return raw
+    .split(",")
+    .map((d: string) =>
+      d.trim().toLowerCase().replace(/^@/, "").replace(/^\./, ""),
+    )
+    .filter((d: string) => d.length > 0);
+};
+
+/**
+ * Checks if a given email is allowed based on the configured domains.
+ * If no domains are configured (empty/undefined), all emails are allowed.
+ */
+export const isEmailDomainAllowed = (email?: string | null): boolean => {
+  const allowed = getAllowedEmailDomains();
+  if (allowed.length === 0) {
+    return true;
+  }
+  if (!email || typeof email !== "string" || !email.includes("@")) {
+    return false;
+  }
+
+  const emailLower = email.trim().toLowerCase();
+  const domainPart = emailLower.slice(emailLower.lastIndexOf("@") + 1);
+  if (!domainPart) return false;
+
+  return allowed.includes(domainPart);
+};
+
 export default {
   /** Default instance (without the protocol) */
   DEFAULT_HOST,
@@ -77,4 +123,13 @@ export default {
    * User ID to set during development.
    */
   DEVELOPMENT_USER_ID: getEnv("VITE_USER_ID", true),
+  /**
+   * Raw allowed email domains configuration string
+   */
+  DOMINIOS_PERMITIDOS: RAW_ALLOWED_DOMAINS,
+  /**
+   * List of allowed email domains
+   */
+  ALLOWED_EMAIL_DOMAINS: getAllowedEmailDomains(),
 };
+

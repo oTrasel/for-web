@@ -6,6 +6,7 @@ import { API, Client, ConnectionState, ProtocolV1 } from "stoat.js";
 import { ModalControllerExtended } from "@revolt/modal";
 import type { State as ApplicationState } from "@revolt/state";
 import type { Session } from "@revolt/state/stores/Auth";
+import { isEmailDomainAllowed } from "@revolt/common";
 
 import Instance from "../instance/Instance";
 import { killServiceWorkerSubscription } from "./NotificationsController";
@@ -470,6 +471,12 @@ export default class ClientController {
    * @param credentials Credentials
    */
   async login(credentials: API.DataLogin, modals: ModalControllerExtended) {
+    if ("email" in credentials && credentials.email) {
+      if (!isEmailDomainAllowed(credentials.email)) {
+        throw new Error("Email domain is not allowed.");
+      }
+    }
+
     const browser = detect();
 
     // Generate a friendly name for this browser

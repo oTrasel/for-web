@@ -1,6 +1,7 @@
-import { Trans } from "@lingui/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 
 import { useApi } from "@revolt/client";
+import { isEmailDomainAllowed } from "@revolt/common";
 import { useInstance } from "@revolt/instance";
 import { useNavigate } from "@revolt/routing";
 import { Button } from "@revolt/ui";
@@ -13,6 +14,7 @@ import { Fields, Form } from "./Form";
  * Flow for resending email verification
  */
 export default function FlowResend() {
+  const { t } = useLingui();
   const api = useApi();
   const navigate = useNavigate();
   const { config } = useInstance();
@@ -24,6 +26,10 @@ export default function FlowResend() {
   async function resend(data: FormData) {
     const email = data.get("email") as string;
     const captcha = data.get("captcha") as string;
+
+    if (!isEmailDomainAllowed(email)) {
+      throw new Error(t`Email domain is not allowed.`);
+    }
 
     await api.post("/auth/account/reverify", {
       email,

@@ -2,6 +2,7 @@ import { createFormControl, createFormGroup } from "solid-forms";
 
 import { Trans, useLingui } from "@lingui/solid/macro";
 
+import { isEmailDomainAllowed } from "@revolt/common";
 import { Column, Dialog, DialogProps, Form2 } from "@revolt/ui";
 
 import { MFATicket } from "stoat.js";
@@ -24,6 +25,10 @@ export function EditEmailModal(
 
   async function onSubmit() {
     try {
+      if (!isEmailDomainAllowed(group.controls.email.value)) {
+        throw new Error(t`Email domain is not allowed.`);
+      }
+
       const mfa = await props.client.account.mfa();
 
       let ticket: MFATicket | undefined;

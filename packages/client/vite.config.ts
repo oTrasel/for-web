@@ -17,6 +17,7 @@ const pwaScope = process.env.PWA_SCOPE || base;
 
 export default defineConfig({
   base,
+  envPrefix: ["VITE_", "dominios_", "DOMINIOS_"],
   plugins: [
     Inspect(),
     devtools(),

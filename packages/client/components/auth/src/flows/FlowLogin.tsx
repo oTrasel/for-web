@@ -1,9 +1,10 @@
 import { Match, Switch } from "solid-js";
 
-import { Trans } from "@lingui/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 
 import { useClientLifecycle } from "@revolt/client";
 import { State, TransitionType } from "@revolt/client/Controller";
+import { isEmailDomainAllowed } from "@revolt/common";
 import { useModals } from "@revolt/modal";
 import { Navigate } from "@revolt/routing";
 import {
@@ -25,6 +26,7 @@ import { Fields, Form } from "./Form";
  * Flow for logging into an account
  */
 export default function FlowLogin() {
+  const { t } = useLingui();
   const state = useState();
   const modals = useModals();
   const { lifecycle, isLoggedIn, login, selectUsername } = useClientLifecycle();
@@ -38,6 +40,10 @@ export default function FlowLogin() {
     const password = data.get("password") as string;
 
     if (!email || !password) return;
+
+    if (!isEmailDomainAllowed(email)) {
+      throw new Error(t`Email domain is not allowed.`);
+    }
 
     await login(
       {
